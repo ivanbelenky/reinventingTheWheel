@@ -83,10 +83,35 @@ class Dot(Operation):
         return self.gradient[idx]
         
 
+class Tanh(Operation):
+    pass
+
+class Sigmoid(Operation):
+    pass
+
+class RELU(Operation):
+    pass
+
+class ELU(Operation):
+    pass
     
-    
-        
-    
+class LeakyRELU(Operation):
+    pass
+
+class L2(Operation):
+    pass
+
+class L1(Operation):
+    pass
+
+class MSE(Operation):
+    pass
+
+class CrossEntropy(Operation):
+    pass
+
+class Softmax(Operation):
+    pass
 
     
 
