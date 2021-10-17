@@ -9,7 +9,8 @@ class Operation(object):
         self.consumers = []
 
         for input_node in inputs:
-            input_node.consumers.append(self)
+            if isinstance(input_node, Operation):
+                input_node.consumers.append(self)
         
     def compute(self):
         pass
@@ -46,42 +47,45 @@ class Sum(Operation):
 
 
 
-class Dot(Operation):
+class TensorDot(Operation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "*"
         self._gradient()
 
     def compute(self):
-        return self.input[0].dot(self.inputs[1])
+        W = self.inputs[0]
+        x = self.inputs[1]
+        return np.tensordot(W,x,axes=1) 
 
     @property
     def gradient(self):
         return self.__gradient
 
     def _gradient(self):
-        shapeW = np.array(self.inputs[0].shape)[:-1]
-        shapex = np.array(self.inputs[1].shape)[1:]
-        shapey = np.hstack((shapeW, shapex))
+        shapeW = np.array(self.inputs[0].shape)
+        shapex = np.array(self.inputs[1].shape)
+        shapey = np.hstack((shapeW[:-1], shapex[1:]))
 
         output_idxs = u.generate_idxs(shapey) 
-        gradient = [self._d_dW(idxs, shapeW) for idxs in output_idxs]
 
+        gradient = np.array([self._d_dW(idxs, shapeW) for idxs in output_idxs])
         self.__gradient = gradient
     
-    def _d_dW(self, out_idxs, shapeW):
+    def _d_dW(self, out_idx, shapeW):
         W_idxs = u.generate_idxs(shapeW)
-        d_dW = np.zeros(size=shapeW)
-        for idx in W_idxs:
-            n = W_idxs.shape[0]
-            x_idx = tuple([idx[-1]].append(out_idxs[n:]))
-            d_dW[idx] = self.inputs[0][x_idx]
+        d_dW = np.zeros(shape=shapeW)
+        n = len(W_idxs[0])
+        for idx in u.filter_idx(W_idxs, out_idx, n):
+            x_idx = [idx[-1]]
+            for out in out_idx[n-1:]:
+                x_idx.append(out)
+            x_idx = tuple(x_idx)            
+            d_dW[idx] = self.inputs[1][x_idx]
         return d_dW
-
-
-    def gradient(self, idx):
-        return self.gradient[idx]
         
+
+
 
 class Tanh(Operation):
     pass

@@ -8,7 +8,9 @@ def generate_idxs(shape):
     in the shape."""
 
     intervals = [np.array([i for i in range(size)]) for size in shape]
-    return cartesian(intervals, out=None)
+    out = cartesian(intervals, out=None)
+    idxs = [tuple(idx) for idx in out]
+    return idxs
 
 import numpy as np
 
@@ -67,3 +69,12 @@ def cartesian(arrays, out=None):
         #for j in xrange(1, arrays[0].size):
             out[j*m:(j+1)*m, 1:] = out[0:m, 1:]
     return out
+
+def filter_idx(idx1, idx2, n):
+    new_idx = []
+    target_idx = idx2[:n-1]
+    for idx in list(idx1):
+        if idx[:n-1] == target_idx:
+            new_idx.append(tuple(idx))
+    return new_idx
+
