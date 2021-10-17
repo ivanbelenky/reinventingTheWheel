@@ -78,3 +78,27 @@ def filter_idx(idx1, idx2, n):
             new_idx.append(tuple(idx))
     return new_idx
 
+
+def sgm(x):
+    return 1/(1+np.e**(-x))
+
+def d_sgm(x):
+	return np.e**(-x)/(((1+np.e**(-x)))**2)
+
+def relu(x):
+    return np.max(0, x)
+
+def d_relu(x):
+    return 1 if x < 0 else 0 
+
+def elu(x, a):
+    return x if x > 0 else a*(np.e**(x)-1)
+ 
+def d_elu(x, a):
+    return 1 if x > 0 else a*(np.e**(x))
+
+def leaky_relu(x, a):
+    return x if x > 0 else a*x
+
+def d_leaky_relu(x, a):
+    return 1 if x > 0 else a
