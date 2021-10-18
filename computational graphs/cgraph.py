@@ -23,7 +23,7 @@ class Operation(object):
 
 class BinaryOperation(Operation):
     def __init__(self, inputs) -> None:
-        if len(inputs) != 1:
+        if len(inputs) != 2:
             raise Exception(f"Invalid number of inputs for Binary Operation, given {len(inputs)}, expected 2")
         super().__init__(inputs=inputs)
 

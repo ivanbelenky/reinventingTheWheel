@@ -5,13 +5,14 @@ import numpy as np
 
 import utils as u
 import cgraph as cg
+import operations as op
 
 
 def test_Dot_operation():
-    x=np.random.random(size=(2,2))
+    x=np.random.random(size=(2,1))
     #W = np.random.random(size=(1,2))
-    W = np.array([[1,2],[3,1]])
-    dot = cg.TensorDot([W,x])
+    W = np.array([[1,2]])
+    dot = op.TensorDot([W,x])
 
     print("W\n",W)
     print("x\n",x)
