@@ -1,5 +1,6 @@
 import numpy as np
 
+#TODO: merge all utils.py files
 
 def generate_idxs(shape):
     """Returns list with all indexes created from shape tuple.
@@ -78,11 +79,16 @@ def filter_idx(idx1, idx2, n):
             new_idx.append(tuple(idx))
     return new_idx
 
+def MSE(u,w):
+	return np.mean(np.sum((u-w)**2))
 
 def sgm(x):
-    return 1/(1+np.e**(-x))
+    return 1/(1+np.exp(-x))
 
 def d_sgm(x):
+    sfgm = sgm(x)
+    return sfgm *(1-sfgm)
+def _d_sgm(x):
 	return np.e**(-x)/(((1+np.e**(-x)))**2)
 
 def relu(x):
