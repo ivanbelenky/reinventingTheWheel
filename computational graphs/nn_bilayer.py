@@ -51,8 +51,9 @@ def L2(W):
 
 
 def grad_L2(W):
-    return 2 * W
-
+    grad = 2 * W
+    grad [:,-1] = 0
+    return grad
 
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
@@ -71,7 +72,7 @@ data -= np.mean(data,axis=0)
 data_test -= np.mean(data,axis=0)
 
 
-LAYER1_SIZE = 100
+LAYER1_SIZE = 50
 LAYER2_SIZE = 10
 BATCH_SIZE = 50
 EPOCHS = 200
@@ -107,12 +108,12 @@ def train(x_t, y_t):
                 y_true[y_t[idx]]= 1
                 dW1 += dW_1(MSE, y, y_true, W2, z, x_t[idx])
                 dW2 += dW_2(MSE, y, y_true, n)
-        
+
             W1 = W1-STEP1*(dW1+0.5*LAMBD*grad_reg(W1))
             W2 = W2-STEP2*(dW2+0.5*LAMBD*grad_reg(W2))
 
         
-        print(f"accuracy:",test(data_test, label_test, W1, W2))
+        print(f"accuracy:",test(data[:1000], data_labels[:1000], W1, W2))
         print(np.mean(dW1),np.mean(dW2))
         print(f"{epoch/EPOCHS*100:.3f}%",end='\r')
         
