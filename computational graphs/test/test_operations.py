@@ -8,7 +8,7 @@ import cgraph as cg
 import operations as op
 
 
-def test_Dot_operation():
+def test_TensorDot_operation():
     x=np.random.random(size=(2,1))
     #W = np.random.random(size=(1,2))
     W = np.array([[1,2]])
@@ -23,4 +23,4 @@ def test_Dot_operation():
     print("reshaped gradient\n\n", dot.gradient.reshape(dot.gradient.shape[0],-1))
 
 if __name__ == "__main__":
-    test_Dot_operation()
+    test_TensorDot_operation()
