@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.lib.arraysetops import isin
 import utils as u
+import copy 
 
 
 
@@ -97,8 +98,9 @@ class cGraph(object):
 
         At least for now this is redundant since variables and inputs are going to be start points."""
 
-        pass
+        return [node for node in self.nodes if isinstance(node, [Input, Variable])]
 
+        
     def _get_end_points(self):
         """Nodes of the graph that are not getting consumed by no body."""
         return [node for node in self.nodes if not node.consumers]
@@ -107,15 +109,41 @@ class cGraph(object):
         """At least for now the gradients are always and only calculated regarding 
         endpoints and variables. """
         
-        routes = []
+        routes_list = []
         for endpoint in self.end_points:
-            for variable in self.variables():
-                routes.append(self._get_routes(endpoint, variable))
+            for startpoint in self.start_points:
+                if isinstance(startpoint, Variable): #just added this line since maybe someday well be old, being realistic, maybe I get some generalized non directed route
+                    routes = []
+                    actual_route = []
+                    self._get_routes(endpoint, startpoint, routes, actual_route)
+                    if routes:
+                        routes_list.append(copy.deepcopy(routes))
 
         return routes 
 
-    def _get_routes():
-        pass
+    def get_routes(self, start, end, routes, actual_route):
+        actual_route.append(start)
+
+        if start == end:
+            routes.append(copy.deepcopy(actual_route))
+            actual_route.remove(start)
+            return 
+
+        elif not start.consumers:
+            actual_route.remove(start)
+            return 
+
+        else:
+            for consumer in start.consumers:
+                self.get_routes(consumer, end, routes, actual_route)
+
+        actual_route.remove(start)
+
+        return 
+
+
+
+
 
 
 
