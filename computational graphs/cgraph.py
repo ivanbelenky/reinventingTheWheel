@@ -36,10 +36,20 @@ class Variable(object):
 class Input(object):
     """Also regarded as placeholders. Here is where the data is going to be implemented as a Node"""
     
-    def __init__(self, inputs=None):
+    def __init__(self, value):        
+        """
+        Parameters
+        ----------
+        value: numpy.ndarray
+        
+        """
         self.consumers = []
-        for input_node in inputs:
-            input_node.consumers.append(self)
+    
+        # this should be smarted in order to avoid multiple init calls, maybe a proxy that inits the val
+        # Node father class?
+
+        self.value = value
+        self.shape = value.shape    
         
     
 
