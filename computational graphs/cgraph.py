@@ -85,7 +85,7 @@ class UnaryOperation(Operation):
         if len(inputs) != 1:
             raise Exception(f"Invalid number of inputs for Binary Operation, given {len(inputs)}, expected 1")
         super().__init__(inputs=inputs)
-    
+        self.input = inputs[0].value
 
 
 class cGraph(object):

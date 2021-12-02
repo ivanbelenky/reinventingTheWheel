@@ -15,7 +15,7 @@ class Tanh(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "tanh"
-        self.value = self.inputs[0].value
+        self.value = self.compute()
 
     @property
     def gradient(self):
@@ -23,7 +23,8 @@ class Tanh(UnaryOperation):
         return self.__gradient
 
     def compute(self):
-        return np.tanh(self.value)
+        self.value = np.tanh(self.input)
+        return self.value
 
     def _gradient(self):       
         gradient = np.array([[1-(np.tanh(self.value))**2]])
@@ -34,7 +35,7 @@ class Sigmoid(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "sgm"
-        self.value = self.inputs[0].value
+        self.value = self.compute()
 
     @property
     def gradient(self):
@@ -42,10 +43,11 @@ class Sigmoid(UnaryOperation):
         return self.__gradient
 
     def compute(self):
-        return u.sgm(self.value)
+        self.value =  u.sgm(self.input)
+        return self.value
 
     def _gradient(self):       
-        gradient = np.array([[u.d_sgm(self.value)]])
+        gradient = np.array([[u.d_sgm(self.input)]])
         self.__gradient = gradient
 
 
@@ -53,7 +55,7 @@ class L1(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs)
         self.symbol = "L1"
-        self.value = self.inputs[0].value
+        self.value = self.compute()
     
     @property
     def gradient(self):
@@ -61,11 +63,12 @@ class L1(UnaryOperation):
         return self.__gradient
 
     def compute(self):
-        return np.linalg.norm(self.value.reshape(-1),1)
+        self.value = np.linalg.norm(self.input.reshape(-1),1)
+        return self.value 
     
     def _gradient(self):
-        gradient = np.zeros(shape=self.value.shape)
-        x_idxs = u.generate_idxs(self.value.shape)
+        gradient = np.zeros(shape=self.input.shape)
+        x_idxs = u.generate_idxs(self.input.shape)
         _L2 = self.compute()
         gradient = self.value/_L2
         self.__gradient = np.array([[gradient]])
@@ -74,7 +77,7 @@ class L2(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs)
         self.symbol = "L2"
-        self.value = self.inputs[0].value
+        self.value = self.compute()
     
     @property
     def gradient(self):
@@ -82,11 +85,12 @@ class L2(UnaryOperation):
         return self.__gradient
 
     def compute(self):
-        return np.linalg.norm(self.value)
-    
+        self.value = np.linalg.norm(self.input)
+        return self.value
+        
     def _gradient(self):
-        gradient = np.zeros(shape=self.value.shape)
-        x_idxs = u.generate_idxs(self.value.shape)
+        gradient = np.zeros(shape=self.input.shape)
+        x_idxs = u.generate_idxs(self.input.shape)
         _L2 = self.compute()
         gradient = self.value/_L2
         self.__gradient = np.array([[gradient]])
@@ -96,7 +100,7 @@ class ReLU(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "ReLU"
-        self.value = self.inputs[0].value
+        self.value = self.compute()
 
     @property
     def gradient(self):
@@ -104,7 +108,9 @@ class ReLU(UnaryOperation):
         return self.__gradient
 
     def compute(self):
-        return u.relu(self.value)
+        self.value = u.relu(self.input)
+        return self.value
+        
 
     def _gradient(self):       
         gradient = np.array([[u.d_relu(self.value)]])
