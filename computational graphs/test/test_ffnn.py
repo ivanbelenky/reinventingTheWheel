@@ -25,7 +25,7 @@ data_test -= np.mean(data,axis=0)
 data /= 255
 data_test /= 255
 
-model = FFNN([20,"relu"], lr=1E-3, batch_size = 200, lambd=1E-2, prob="sgm")
+model = FFNN([20,"relu"], lr=1E-2, batch_size = 200, lambd=1E-2, prob="sgm")
 model.load(data, data_labels, data_test, label_test)
 model.train()
 
