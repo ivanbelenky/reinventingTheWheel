@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-(x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
+(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
 x_train = x_train.astype(np.float)
 x_test = x_test.astype(np.float) 
@@ -22,7 +22,10 @@ label_test = y_test.reshape(-1)
 data -= np.mean(data,axis=0)
 data_test -= np.mean(data,axis=0)
 
-model = FFNN([100,"tanh"], lr=1E-3, batch_size = 50,lambd=1E-6)
+data /= 255
+data_test /= 255
+
+model = FFNN([20,"relu"], lr=1E-3, batch_size = 200, lambd=1E-2, prob="sgm")
 model.load(data, data_labels, data_test, label_test)
 model.train()
 

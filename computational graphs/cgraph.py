@@ -12,7 +12,7 @@ class Variable(object):
     This are usually going to get connected with input or operation outputs for internal 
     layers. They have an initial value."""
 
-    def __init__(self, shape, init = "default", init_max = 10E-3, range = (-1,1)):
+    def __init__(self, shape, init = "default", init_max = 1E-3, range = (-1,1)):
         self.id = uuid.uuid4()
         
         self.shape = shape

@@ -101,7 +101,7 @@ class FFNN(object):
 
                 dreg_dW = [self.graph.propagate_gradient(gl) for gl in reg_grad_list]
             
-                print(batch/self.batch_size)
+                #print(batch/self.batch_size)
 
             for i,W in enumerate(self.all_weights):
                 W.value -= self.lr*(dW[i] + self.lambd*dreg_dW[i])
@@ -111,13 +111,13 @@ class FFNN(object):
 
     def test(self):
         predicted = []
-        for data, label in zip(self.test_data[:500], self.test_labels[:500]):
+        for data, label in zip(self.test_data, self.test_labels):
             self.input.value = data.T
             self.graph.compute()
             predicted.append(np.argmax(self.prediction.value.reshape(-1)))
         
         predicted = np.array(predicted)
-        mask = (predicted == self.test_labels[:500])
+        mask = (predicted == self.test_labels)
 
         return self.accuracy(mask)
 
@@ -172,6 +172,7 @@ class FFNN(object):
 
 
     def _add_regularizers(self):
-        self.all_weights = [layer.weights for layer in self.net if isinstance(layer, WeightLayer)]
-        self.regularizers = [op.L2([weight]) for weight in self.all_weights]
-        #TODO: regularizer is hardcode should be picked from dictionary  
+        REGULARIZERS = {"L2":op.L2, "L1":op.L1}
+        self.all_weights = [layer.weights for layer in self.net if isinstance(layer, (WeightLayer, ProbabilityLayer))]
+        self.regularizers = [REGULARIZERS[self.regularizer]([weight]) for weight in self.all_weights]
+

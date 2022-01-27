@@ -76,17 +76,26 @@ def main():
     for nd in nds:
         ax[0].scatter(nd[:,0],nd[:,1],s=0.1)
     
+    i=0
     for mean,new_mean in zip(initial_means,new_means):
+        if i==0:
+            ax[0].scatter(mean[0],mean[1],color='w',s=100,marker='+',label="Mean")
+            ax[0].scatter(new_mean[0], new_mean[1],color='w',s=100,marker='*',label="Predicted Mean")
+            
         ax[0].scatter(mean[0],mean[1],color='w',s=100,marker='+')
         ax[0].scatter(new_mean[0], new_mean[1],color='w',s=100,marker='*')
-
+        ax[0].legend(loc=1)
+        ax[0].set_xlabel("x1")
+        ax[0].set_ylabel("y1")
+        i+=1
     mean_evolution_length = [ np.linalg.norm(mean_evolution[i]-mean_evolution[i-1]) 
     for i in range(1,len(mean_evolution))]
 
     generations = [i for i in range(1, len(mean_evolution))]
     
     ax[1].plot(generations, mean_evolution_length)
-
+    ax[1].set_xlabel("epoch")
+    ax[1].set_ylabel("Δ evolution length")
     plt.show()
 
 
