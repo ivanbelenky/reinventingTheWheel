@@ -94,13 +94,13 @@ def _d_sgm(x):
 
 def relu(x):
     y = copy.deepcopy(x)
-    y[y<0] = 0
+    y[y<0] = 0 
     return y
 
 def d_relu(x):
     y = copy.deepcopy(x)
     y[y>0] = 1
-    y[y<0] = 0
+    y[y<0] = 0.05
     return y 
 
 def elu(x, a):
@@ -109,8 +109,19 @@ def elu(x, a):
 def d_elu(x, a):
     return 1 if x > 0 else a*(np.e**(x))
 
-def leaky_relu(x, a):
-    return x if x > 0 else a*x
+def leaky_relu(a, x):
+    y = copy.deepcopy(x)
+    y[y<0] *= a.reshape(-1) 
+    return y
 
-def d_leaky_relu(x, a):
-    return 1 if x > 0 else a
+def d_leaky_relu(a, x):
+    grad0 = np.zeros(x.shape)
+    grad0[x<0] = 1
+
+    grad1 = np.zeros(x.shape)
+    grad1[x[:,0]>0] = 1
+    grad1[x[:,0]<=0] = a
+    grad1 = np.diag(grad1.reshape(-1))
+
+    return [grad0, grad1]
+    

@@ -49,5 +49,5 @@ if __name__ == "__main__":
     get_routes(var_1, var_9, routes, actual_route) 
     for r in routes:
         print("routes",r)
-
+    print(routes)
 

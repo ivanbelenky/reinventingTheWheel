@@ -1,5 +1,4 @@
 from cgraph import UnaryOperation, BinaryOperation
-from variables import Variable
 
 import utils as u
 import numpy as np
@@ -15,137 +14,144 @@ class Tanh(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "tanh"
-        self.value = self.compute()
-
-    @property
-    def gradient(self):
-        self._gradient()
-        return self.__gradient
 
     def compute(self):
-        self.value = np.tanh(self.input)
+        self.value = np.tanh(self.input.value)
         return self.value
 
     def _gradient(self):       
-        gradient = np.array([[1-(np.tanh(self.value))**2]])
-        self.__gradient = gradient
-
+        gradient = np.diag((1-(np.tanh(self.value))**2).reshape(-1))
+        self.gradient = gradient
+        return self.gradient
 
 class Sigmoid(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "sgm"
-        self.value = self.compute()
 
-    @property
-    def gradient(self):
-        self._gradient()
-        return self.__gradient
 
     def compute(self):
-        self.value =  u.sgm(self.input)
+        self.value =  u.sgm(self.input.value)
         return self.value
 
     def _gradient(self):       
-        gradient = np.array([[u.d_sgm(self.input)]])
-        self.__gradient = gradient
+        gradient = np.diag((u.d_sgm(self.input.value)).reshape(-1))
+        self.gradient = gradient
+        return self.gradient
 
 
 class L1(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs)
         self.symbol = "L1"
-        self.value = self.compute()
-    
-    @property
-    def gradient(self):
-        self._gradient()
-        return self.__gradient
+        
 
     def compute(self):
-        self.value = np.linalg.norm(self.input.reshape(-1),1)
+        self.value = np.linalg.norm(self.input.value,1)
         return self.value 
     
     def _gradient(self):
-        gradient = np.zeros(shape=self.input.shape)
-        x_idxs = u.generate_idxs(self.input.shape)
-        _L2 = self.compute()
-        gradient = self.value/_L2
-        self.__gradient = np.array([[gradient]])
+        gradient = np.zeros(shape=self.input.value.shape)
+        _L1 = self.compute()
+        gradient = self.input.value/_L1
+        self.gradient = gradient.T
+        return self.gradient
+
 
 class L2(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs)
         self.symbol = "L2"
-        self.value = self.compute()
-    
-    @property
-    def gradient(self):
-        self._gradient()
-        return self.__gradient
+
 
     def compute(self):
-        self.value = np.linalg.norm(self.input)
+        self.value = np.linalg.norm(self.input.value)
         return self.value
         
     def _gradient(self):
-        gradient = np.zeros(shape=self.input.shape)
-        x_idxs = u.generate_idxs(self.input.shape)
+        gradient = np.zeros(shape=self.input.value.shape)
         _L2 = self.compute()
-        gradient = self.value/_L2
-        self.__gradient = np.array([[gradient]])
+        gradient = self.input.value/_L2
+        self.gradient = gradient.T
+        return self.gradient
 
 
 class ReLU(UnaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "ReLU"
-        self.value = self.compute()
 
-    @property
-    def gradient(self):
-        self._gradient()
-        return self.__gradient
 
     def compute(self):
-        self.value = u.relu(self.input)
+        self.value = u.relu(self.input.value)
         return self.value
         
 
     def _gradient(self):       
-        gradient = np.array([[u.d_relu(self.value)]])
-        self.__gradient = gradient
-        
+        gradient = np.diag(u.d_relu(self.value))
+        self.gradient = gradient
+        return self.gradient
+
+
+class Softmax(UnaryOperation):
+    def __init__(self, inputs) -> None:
+        super().__init__(inputs=inputs)
+        self.symbol = "Softmax"
+    
+    def compute(self):
+        z_max = np.max(self.input.value)
+        denom = np.sum(np.exp(self.input.value-z_max))
+        self.value = np.exp(self.input.value-z_max)/denom
+        return self.value
+
+    def _gradient(self):
+        z_max = np.max(self.input.value)
+        denom = np.sum(np.exp(self.input.value-z_max))
+        exp = np.exp(self.input.value-z_max)
+        gradient = np.diag(exp/denom) - exp.dot(exp.T)/denom**2
+
+        self.gradient = gradient
+        return self.gradient
+
+
 
 ###########################################################
 #                       Binary                            #
 ###########################################################
 
 
+
 class Sum(BinaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "+"
-        self._gradient()
+        self.value = None
+        self.gradient = [None, None]
 
     def compute(self):
-        return np.sum(self.inputs)        
-
-    @property
-    def gradient(self):
-        return self._gradient
+        self.value = self.inputs[0].value+self.inputs[1].value
+        return  self.value
 
     def _gradient(self):
-        shapes = np.array([input.shape for input in self.shape])
-        if np.unique(shapes).shape[0] != 1:
-            raise Exception("Sum with inputs of different shapes")        
-
         shape = self.inputs[0].value.shape
-        self._gradient = np.ones(shape)
+        self.gradient[0] = np.identity(shape[0])
+        self.gradient[1] = np.identity(shape[0])
 
-    def gradient(self, idx):
-        # if idx < 0 or idx > len(self.inputs)-1:
-        #     raise Exception("Invalid idx")
+class Wx(BinaryOperation):
+    """this will be just matrix times a vector because, will do efficiently the tensor product """
+    def __init__(self, inputs) -> None:
+        super().__init__(inputs)
+        self.symbol = "."
+        self.value = None
+        self.gradient = [None, None]
+
+    def compute(self):
+        self.value = self.inputs[0].value.dot(self.inputs[1].value)
+        return self.value
+
+    def _gradient(self):
+        self.gradient[0] = self.inputs[1].value.reshape(1,-1)
+        self.gradient[1] = self.inputs[0].value
         return self.gradient
 
 
@@ -153,7 +159,7 @@ class TensorDot(BinaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "*"
-        self._gradient()
+        self.value = None
 
 
     def compute(self):
@@ -161,9 +167,6 @@ class TensorDot(BinaryOperation):
         x = self.inputs[1].value
         return np.tensordot(W,x,axes=1) 
 
-    @property
-    def gradient(self):
-        return self.__gradient
 
     def _gradient(self):
         shapeW = np.array(self.inputs[0].value.shape)
@@ -173,7 +176,8 @@ class TensorDot(BinaryOperation):
         output_idxs = u.generate_idxs(shapey) 
 
         gradient = np.array([self._d_dW(idxs, shapeW) for idxs in output_idxs])
-        self.__gradient = gradient
+        self.gradient = gradient
+        return self.gradient
     
     def _d_dW(self, out_idx, shapeW):
         W_idxs = u.generate_idxs(shapeW)
@@ -193,42 +197,32 @@ class ELU(BinaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "ELU"
-        self.x = np.sum(self.inputs[0].value)
-        self.a = self.inputs[1].value
-        if not isinstance(self.a, Variable):
-            raise Exception("a constant of ELU must be a parameter")
-
-    @property
-    def gradient(self):
-        return self.__gradient
+        self.value = None
+        self.gradient = [None, None]
 
     def compute(self):
-        return u.elu(self.x, self.a)
+        self.value = u.elu(self.inputs[0].value, self.inputs[1].value) 
+        return self.value 
 
     def _gradient(self):       
-        gradient = np.array([[u.d_elu(self.x, self.a)]])
-        return gradient
+        self.gradient = np.array([[u.d_elu(self.inputs[0], self.inputs[1])]])
+        return self.gradient
     
 
 class LeakyReLU(BinaryOperation):
     def __init__(self, inputs) -> None:
         super().__init__(inputs=inputs)
         self.symbol = "Leaky-ReLU"
-        self.x = np.sum(self.inputs[0].value)
-        self.a = self.inputs[1].value
-        if not isinstance(self.a, Variable):
-            raise Exception("a constant of ELU must be a parameter")
-
-    @property
-    def gradient(self):
-        return self.__gradient
+        self.value = None
+        self.gradient = [None, None]
 
     def compute(self):
-        return u.leaky_relu(self.x, self.a)
+        self.value = u.leaky_relu(self.inputs[0].value, self.inputs[1].value) 
+        return self.value
 
-    def _gradient(self):       
-        gradient = np.array([[u.d_leaky_relu(self.x, self.a)]])
-        return gradient
+    def _gradient(self):        
+        self.gradient = u.d_leaky_relu(self.inputs[0].value, self.inputs[1].value)
+        return self.gradient
 
 
 
@@ -239,12 +233,26 @@ class MSE(BinaryOperation):
 
 
 class CrossEntropy(BinaryOperation):
-    pass
+    def __init__(self, inputs) -> None:
+        super().__init__(inputs=inputs)
+        self.symbol = "CE"
+        self.value = None
+        self.gradient = [None,None]
+
+    def compute(self):
+        input_min = np.min(self.inputs[0].value)
+        self.value = -np.log(self.inputs[0].value[self.inputs[1].value == 1] - input_min + 0.01)
+        return self.value
+
+    def _gradient(self):
+        gradient = np.zeros(self.inputs[0].value.shape)
+        mask = (self.inputs[1].value==1)
+        gradient[mask==True] = -1/self.value
+        self.gradient[1] = gradient.T
+        return self.gradient 
 
 
 
-class Softmax(BinaryOperation):
-    pass
 
 
 
