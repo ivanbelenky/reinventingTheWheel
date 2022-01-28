@@ -1,16 +1,3 @@
-# reinventingTheWheel
-
-This repo includes implementations for both classic ML, and DL and DNN. The idea is to reinvent the Wheel as the title says. Nothing too fancy, nothing to efficient, just hitting the wall while replicating the basics, the beautiful basics behind high level libraries such as TF or Torch. 
-
-# Classical Machine Learning
-This package implements the following classical machine learning algorithms, supervised and unsupervised, as well as compression algorithms  as well as some utilities used to perform such task.
-
-- [x] K-Means
-- [x] K-Nearest Neighbors
-- [x] Logistic Regression 
-- [x] Support Vector Machines
-- [x] PCA
-- [x] LDA 
 
 # Computational graphs 
 
