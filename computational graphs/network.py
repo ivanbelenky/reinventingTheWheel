@@ -36,9 +36,9 @@ class FFNN(object):
 
 
     def load(self, data, data_labels, test_data, test_labels):
-        self.data = data
+        self.data = np.hstack([data,np.ones([data.shape[0],1])])
         self.labels = data_labels
-        self.test_data = test_data
+        self.test_data = np.hstack([test_data,np.ones((test_data.shape[0],1))])
         self.test_labels = test_labels
         
         self.classes = np.unique(data_labels)
@@ -91,7 +91,8 @@ class FFNN(object):
                     
                     gradients_list = [self.graph.gradient(self.loss_node, W) for W in self.all_weights]
                     reg_grad_list = [self.graph.gradient(reg, W) for reg,W in zip(self.regularizers, self.all_weights)]
-                    
+
+
                     self.true_label.value[self.labels[idx]] = 0
                     if i == 0:
                         dW = [self.graph.propagate_gradient(gl) for gl in gradients_list]
@@ -118,7 +119,7 @@ class FFNN(object):
         
         predicted = np.array(predicted)
         mask = (predicted == self.test_labels)
-
+    
         return self.accuracy(mask)
 
 
@@ -175,4 +176,4 @@ class FFNN(object):
         REGULARIZERS = {"L2":op.L2, "L1":op.L1}
         self.all_weights = [layer.weights for layer in self.net if isinstance(layer, (WeightLayer, ProbabilityLayer))]
         self.regularizers = [REGULARIZERS[self.regularizer]([weight]) for weight in self.all_weights]
-
+        

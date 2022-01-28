@@ -18,9 +18,10 @@ class WeightLayer(Layer):
         super().__init__(input)
         self.weights = cg.Variable([out_shape, in_shape])
         self.out = op.Wx([self.weights, self.input])
-        
-        self.nodes = [self.weights, self.out]
 
+        self.nodes = [self.weights,self.out]
+
+        
 
 
 class ActivationLayer(Layer):
